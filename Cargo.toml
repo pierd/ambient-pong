@@ -1,0 +1,20 @@
+[package]
+name = "ambient_pong"
+
+edition = "2021"
+publish = false
+rust-version = "1.67"
+version = "0.0.1"
+
+[dependencies]
+# tested with Ambient commit db96fe78fce08993aa40a5815ec227ca26dd2e66
+ambient_api = {path = "../Ambient/guest/rust/api" }
+
+[[bin]]
+name = "ambient_pong_server"
+path = "src/server.rs"
+required-features = ["server"]
+
+[features]
+client = ["ambient_api/client"]
+server = ["ambient_api/server"]
