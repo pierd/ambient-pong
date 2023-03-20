@@ -83,9 +83,9 @@ pub async fn main() -> EventResult {
         });
 
     // Update camera so we have correct aspect ratio
-    query((user_id(), player_camera_id(), window_logical_size()))
-        .build()
-        .each_frame(move |windows| {
+    change_query((user_id(), player_camera_id(), window_logical_size()))
+        .track_change(window_logical_size())
+        .bind(move |windows| {
             for (_, (uid, camera_id, window)) in windows {
                 let window = window.as_vec2();
                 if window.x <= 0. || window.y <= 0. {
