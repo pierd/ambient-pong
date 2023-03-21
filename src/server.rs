@@ -156,9 +156,10 @@ pub async fn main() -> EventResult {
             if keys.contains(&KeyCode::Down) {
                 paddle_position.y -= PADDLE_V_PER_FRAME;
             }
-            paddle_position.y = paddle_position
-                .y
-                .clamp(PADDLE_LENGTH / 2. - 1., 1. - PADDLE_LENGTH / 2.);
+            paddle_position.y = paddle_position.y.clamp(
+                PADDLE_LENGTH / 2. - Y_BOUNDARY,
+                Y_BOUNDARY - PADDLE_LENGTH / 2.,
+            );
             entity::set_component(paddle, translation(), paddle_position);
         }
 
