@@ -13,7 +13,7 @@ use ambient_api::{
         rendering,
         transform::*,
     },
-    concepts::{make_orthographic_camera, make_transformable},
+    concepts::{make_orthographic_camera, make_sphere, make_transformable},
     player::KeyCode,
     prelude::*,
 };
@@ -27,14 +27,17 @@ const BALL_SPINNING: f32 = PI / 4.; // radians / ratio of paddle from the center
 const BALL_RADIUS: f32 = 0.1;
 const PADDLE_V_PER_FRAME: f32 = BALL_V_PER_FRAME * 2.;
 const PADDLE_LENGTH: f32 = 0.3;
+const PADDLE_WIDTH: f32 = 0.1;
+const SCREEN_PADDING: f32 = 0.2;
 
 fn spawn_paddle(left: bool, color: Vec3) -> EntityId {
+    let x = X_BOUNDARY + PADDLE_WIDTH / 2.;
     make_transformable()
         .with_default(cube())
-        .with(scale(), vec3(0.1, PADDLE_LENGTH, 1.))
+        .with(scale(), vec3(PADDLE_WIDTH, PADDLE_LENGTH, 1.))
         .with(
             translation(),
-            vec3(if left { -X_BOUNDARY } else { X_BOUNDARY }, 0., 0.),
+            vec3(if left { -x } else { x }, 0., 0.),
         )
         .with(rendering::color(), color.extend(1.))
         .spawn()
@@ -42,9 +45,10 @@ fn spawn_paddle(left: bool, color: Vec3) -> EntityId {
 
 fn gen_ball_velocity() -> Vec3 {
     let angle = random::<f32>() * (PI / 5.) + PI / 10.;
+    let y_sign = if random::<bool>() { 1. } else { -1. };
     vec3(
         angle.cos() * BALL_V_PER_FRAME,
-        angle.sin() * BALL_V_PER_FRAME,
+        angle.sin() * BALL_V_PER_FRAME * y_sign,
         0.,
     )
 }
@@ -63,7 +67,7 @@ pub async fn main() -> EventResult {
         spawn_paddle(false, vec3(0., 255., 0.)),
     ];
     let ball = make_transformable()
-        .with_default(cube())
+        .with_merge(make_sphere())
         .with(scale(), vec3(BALL_RADIUS, BALL_RADIUS, 1.))
         .with(translation(), vec3(0., 0., -1.))
         .with(rendering::color(), vec4(255., 255., 255., 1.))
@@ -92,10 +96,12 @@ pub async fn main() -> EventResult {
                     continue;
                 }
 
+                let x_boundary = X_BOUNDARY + SCREEN_PADDING;
+                let y_boundary = Y_BOUNDARY + SCREEN_PADDING;
                 let (left, right, top, bottom) = if window.x < window.y {
-                    (-1., 1., window.y / window.x, -window.y / window.x)
+                    (-x_boundary, x_boundary, y_boundary * window.y / window.x, -y_boundary * window.y / window.x)
                 } else {
-                    (-window.x / window.y, window.x / window.y, 1., -1.)
+                    (-x_boundary * window.x / window.y, x_boundary * window.x / window.y, y_boundary, -y_boundary)
                 };
                 entity::set_component(camera_id, orthographic_left(), left);
                 entity::set_component(camera_id, orthographic_right(), right);
