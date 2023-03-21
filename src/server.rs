@@ -35,10 +35,7 @@ fn spawn_paddle(left: bool, color: Vec3) -> EntityId {
     make_transformable()
         .with_default(cube())
         .with(scale(), vec3(PADDLE_WIDTH, PADDLE_LENGTH, 1.))
-        .with(
-            translation(),
-            vec3(if left { -x } else { x }, 0., 0.),
-        )
+        .with(translation(), vec3(if left { -x } else { x }, 0., 0.))
         .with(rendering::color(), color.extend(1.))
         .spawn()
 }
@@ -87,10 +84,10 @@ pub async fn main() -> EventResult {
         });
 
     // Update camera so we have correct aspect ratio
-    change_query((user_id(), player_camera_id(), window_logical_size()))
+    change_query((player_camera_id(), window_logical_size()))
         .track_change(window_logical_size())
         .bind(move |windows| {
-            for (_, (uid, camera_id, window)) in windows {
+            for (_, (camera_id, window)) in windows {
                 let window = window.as_vec2();
                 if window.x <= 0. || window.y <= 0. {
                     continue;
@@ -99,9 +96,19 @@ pub async fn main() -> EventResult {
                 let x_boundary = X_BOUNDARY + SCREEN_PADDING;
                 let y_boundary = Y_BOUNDARY + SCREEN_PADDING;
                 let (left, right, top, bottom) = if window.x < window.y {
-                    (-x_boundary, x_boundary, y_boundary * window.y / window.x, -y_boundary * window.y / window.x)
+                    (
+                        -x_boundary,
+                        x_boundary,
+                        y_boundary * window.y / window.x,
+                        -y_boundary * window.y / window.x,
+                    )
                 } else {
-                    (-x_boundary * window.x / window.y, x_boundary * window.x / window.y, y_boundary, -y_boundary)
+                    (
+                        -x_boundary * window.x / window.y,
+                        x_boundary * window.x / window.y,
+                        y_boundary,
+                        -y_boundary,
+                    )
                 };
                 entity::set_component(camera_id, orthographic_left(), left);
                 entity::set_component(camera_id, orthographic_right(), right);
